@@ -22,7 +22,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class StudentService {
     final StudentRepo studentRepo;
-    final int serialId = 100;
+
     public void saveOrUpdate(Student student) {
         studentRepo.save(student);
     }
