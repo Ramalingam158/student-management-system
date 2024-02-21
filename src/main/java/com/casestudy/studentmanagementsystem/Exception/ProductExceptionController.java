@@ -12,7 +12,7 @@ import java.util.NoSuchElementException;
 @ControllerAdvice
 public class ProductExceptionController {
     @ExceptionHandler(value = NoSuchElementException.class)
-    public ResponseEntity<Map<String, String>> noSuchStudentException() {
+    public ResponseEntity<Map<String, String>> noSuchStudentExceptionHandler() {
         Map<String, String> JSONResponse = new HashMap<>();
         JSONResponse.put("Error", "No such student Exist with this ID");
         return new ResponseEntity<>(JSONResponse, HttpStatus.NOT_FOUND);
