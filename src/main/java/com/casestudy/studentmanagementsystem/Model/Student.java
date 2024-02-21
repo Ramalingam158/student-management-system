@@ -1,4 +1,4 @@
-package uk.co.sainsbury.studentmanagementsystem.Model;
+package com.casestudy.studentmanagementsystem.Model;
 
 import com.opencsv.bean.CsvBindByName;
 import jakarta.persistence.Column;

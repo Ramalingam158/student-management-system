@@ -1,8 +1,8 @@
-package uk.co.sainsbury.studentmanagementsystem.Controller;
+package com.casestudy.studentmanagementsystem.Controller;
 
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import uk.co.sainsbury.studentmanagementsystem.Service.StudentService;
+import com.casestudy.studentmanagementsystem.Service.StudentService;
 
 public class ApiControllerTest {
     @InjectMocks

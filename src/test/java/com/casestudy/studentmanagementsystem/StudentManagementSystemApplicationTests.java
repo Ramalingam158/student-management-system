@@ -1,4 +1,4 @@
-package uk.co.sainsbury.studentmanagementsystem;
+package com.casestudy.studentmanagementsystem;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
