@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 
 @ControllerAdvice
-public class ProductExceptionController {
+public class ExceptionController {
     @ExceptionHandler(value = NoSuchElementException.class)
     public ResponseEntity<Map<String, String>> noSuchStudentExceptionHandler() {
         Map<String, String> JSONResponse = new HashMap<>();

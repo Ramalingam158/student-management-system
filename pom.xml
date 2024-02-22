@@ -57,8 +57,11 @@
 				<version>3.21.0</version>
 				<configuration>
 					<rulesets>
-						<ruleset>/rulesets/java/maven-pmd-plugin-default.xml</ruleset>
+						<ruleset>/category/java/bestpractices.xml</ruleset>
 					</rulesets>
+					<failOnViolation>true</failOnViolation>
+					<printFailingErrors>true</printFailingErrors>
+					<maxAllowedViolations>10</maxAllowedViolations>
 				</configuration>
 			</plugin>
 			<plugin>
