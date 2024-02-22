@@ -37,17 +37,28 @@ public class StudentServiceTest {
     void getSingleStudentTest_StudentExists() {
         when(studentRepoMock.findById(100L)).thenReturn(Optional.ofNullable(student));
 
+<<<<<<< HEAD
         Optional<Student> actualResult = studentService.getSingleStudent(100);
 
         Assertions.assertEquals(student.getStudentId(), actualResult.get().getStudentId());
         Assertions.assertEquals(student.getName(), actualResult.get().getName());
+=======
+        Student actualResult = studentService.getSingleStudent(100);
+
+        Assertions.assertEquals(student.getStudentId(), actualResult.getStudentId());
+        Assertions.assertEquals(student.getName(), actualResult.getName());
+>>>>>>> c7dec3ff88db2f61b00ed43cf52e21b2c900b917
     }
 
     @Test
     void getSingleStudentTest_NoStudentExists() {
         when(studentRepoMock.findById(anyLong())).thenReturn(Optional.empty());
+<<<<<<< HEAD
         Optional<Student> actualResult = studentRepoMock.findById(1001L);
         Assertions.assertFalse(actualResult.isPresent());
+=======
+        Assertions.assertThrows(NoSuchElementException.class, () -> {studentService.getSingleStudent(1001);});
+>>>>>>> c7dec3ff88db2f61b00ed43cf52e21b2c900b917
     }
 
     @Test
