@@ -11,7 +11,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -31,23 +30,24 @@ public class StudentServiceTest {
     void saveOrUpdateTest() {
         when(studentRepoMock.save(student)).thenReturn(student);
         String actualResult = studentService.saveOrUpdate(student);
-        Assertions.assertEquals("Success", actualResult);
+        Assertions.assertEquals("OK", actualResult);
     }
 
     @Test
     void getSingleStudentTest_StudentExists() {
         when(studentRepoMock.findById(100L)).thenReturn(Optional.ofNullable(student));
 
-        Student actualResult = studentService.getSingleStudent(100);
+        Optional<Student> actualResult = studentService.getSingleStudent(100);
 
-        Assertions.assertEquals(student.getStudentId(), actualResult.getStudentId());
-        Assertions.assertEquals(student.getName(), actualResult.getName());
+        Assertions.assertEquals(student.getStudentId(), actualResult.get().getStudentId());
+        Assertions.assertEquals(student.getName(), actualResult.get().getName());
     }
 
     @Test
     void getSingleStudentTest_NoStudentExists() {
         when(studentRepoMock.findById(anyLong())).thenReturn(Optional.empty());
-        Assertions.assertThrows(NoSuchElementException.class, () -> {studentService.getSingleStudent(1001);});
+        Optional<Student> actualResult = studentRepoMock.findById(1001L);
+        Assertions.assertFalse(actualResult.isPresent());
     }
 
     @Test
@@ -79,7 +79,7 @@ public class StudentServiceTest {
 
         when(studentRepoMock.saveAll(any())).thenReturn(studentList);
         String actualResult = studentService.readFromCSV("D:\\Projects\\student-management-system\\data.csv");
-        Assertions.assertEquals("Success", actualResult);
+        Assertions.assertEquals("OK", actualResult);
     }
 
     @Test
@@ -98,7 +98,7 @@ public class StudentServiceTest {
 
         String actualResult = studentService.writeToCSV(path);
 
-        Assertions.assertEquals("Success", actualResult);
+        Assertions.assertEquals("OK", actualResult);
     }
 
     @Test

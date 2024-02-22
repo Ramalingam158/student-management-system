@@ -3,6 +3,8 @@ package com.casestudy.studentmanagementsystem.Controller;
 import com.casestudy.studentmanagementsystem.Model.Student;
 import com.casestudy.studentmanagementsystem.Service.StudentService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.ServletException;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -10,7 +12,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -19,9 +20,9 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -33,32 +34,32 @@ public class ApiControllerTest {
     @Mock
     StudentService studentServiceMock;
 
-    @Autowired
-    private MockMvc mvc;
-
     @Test
     void saveSingleStudentTest() throws Exception {
         JSONObject input = new JSONObject();
-            input.put("id", 1000L);
-            input.put("name", "Ram");
-            input.put("email", "ram@mail.com");
+        input.put("id", 1000L);
+        input.put("name", "Ram");
+        input.put("email", "ram@mail.com");
 
-            when(studentServiceMock.saveOrUpdate(any())).thenReturn("Success");
+        when(studentServiceMock.saveOrUpdate(any())).thenReturn("OK");
 
-            MockMvc mockMvc = MockMvcBuilders.standaloneSetup(apiController).build();
-            MvcResult actualResult = mockMvc.perform(MockMvcRequestBuilders.post("/student")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(input.toString()))
-                    .andExpect(status().isOk())
-                    .andReturn();
+        MockMvc mockMvc = MockMvcBuilders.standaloneSetup(apiController).build();
+        MvcResult actualResult = mockMvc.perform(MockMvcRequestBuilders.post("/student")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(input.toString()))
+                .andExpect(status().isOk())
+                .andReturn();
 
-            Assertions.assertEquals("OK", actualResult.getResponse().getContentAsString());
+        Assertions.assertEquals("OK", actualResult.getResponse().getContentAsString());
     }
 
     @Test
     void getSingleStudentTest_StudentExists() throws Exception {
 
-        when(studentServiceMock.getSingleStudent(1001L)).thenReturn(new Student(1001L, "Ram", "ram@mail.com"));
+        Student student = new Student(1001L, "Ram", "ram@mail.com");
+        Optional<Student> input = Optional.of(student);
+
+        when(studentServiceMock.getSingleStudent(1001L)).thenReturn(input);
 
         MockMvc mockMvc = MockMvcBuilders.standaloneSetup(apiController).build();
         MvcResult actualResult = mockMvc.perform(MockMvcRequestBuilders.get("/student/1001"))
@@ -73,25 +74,16 @@ public class ApiControllerTest {
     }
 
     @Test
-    void getSingleStudentTest_NoStudentExists() throws Exception {
+    void getSingleStudentTest_NoStudentExists() {
 
-        when(studentServiceMock.getSingleStudent(anyLong())).thenThrow(ArrayIndexOutOfBoundsException.class);
+        when(studentServiceMock.getSingleStudent(anyLong())).thenReturn(Optional.empty());
 
         MockMvc mockMvc = MockMvcBuilders.standaloneSetup(apiController).build();
-        MvcResult actualResult = mockMvc.perform(MockMvcRequestBuilders.get("/student/1001")
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().is4xxClientError())
-                .andReturn();
-
-        String content = actualResult.getResponse().getContentAsString();
-        System.out.println(content);
-        JSONObject actual = new JSONObject(content);
-
-        Assertions.assertEquals("No such student Exist with this ID", actual.get("error"));
+        Assertions.assertThrows(ServletException.class, () -> mockMvc.perform(MockMvcRequestBuilders.get("/student/1001")));
     }
 
     @Test
-    void getAllStudentsTest() throws Exception {
+    void getAllStudentsTest_StudentExists() throws Exception {
         List<Student> studentList = new ArrayList<>();
         studentList.add(new Student(1001L, "Ram", "ram@mail.com"));
         when(studentServiceMock.getAllStudent()).thenReturn(studentList);
@@ -102,6 +94,97 @@ public class ApiControllerTest {
                 .andReturn();
 
         String content = actualResult.getResponse().getContentAsString();
+        JSONArray result = new JSONArray(content);
 
+        Assertions.assertEquals(studentList.size(), result.length());
+        String res = new JSONObject(result.get(0).toString()).get("studentId").toString();
+        Assertions.assertEquals(studentList.get(0).getStudentId(), Long.parseLong(res));
+    }
+
+    @Test
+    void getAllStudentsTest_NoStudentExists() throws Exception {
+        List<Student> studentList = new ArrayList<>();
+        when(studentServiceMock.getAllStudent()).thenReturn(studentList);
+
+        MockMvc mockMvc = MockMvcBuilders.standaloneSetup(apiController).build();
+        MvcResult actualResult = mockMvc.perform(MockMvcRequestBuilders.get("/student"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String content = actualResult.getResponse().getContentAsString();
+        JSONArray result = new JSONArray(content);
+
+        Assertions.assertEquals(studentList.size(), result.length());
+    }
+
+    @Test
+    void updateStudentTest() throws Exception{
+
+        when(studentServiceMock.saveOrUpdate(any())).thenReturn("Success");
+
+        JSONObject input = new JSONObject();
+        input.put("id", 1000L);
+        input.put("name", "Ram");
+        input.put("email", "ram@mail.com");
+
+        MockMvc mockMvc = MockMvcBuilders.standaloneSetup(apiController).build();
+        MvcResult actualResult = mockMvc.perform(MockMvcRequestBuilders.put("/update-student")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(input.toString()))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        Assertions.assertEquals("OK", actualResult.getResponse().getContentAsString());
+    }
+
+    @Test
+    void importDataFromCSVTest_Success() throws Exception {
+        when(studentServiceMock.readFromCSV(anyString())).thenReturn("OK");
+
+        MockMvc mockMvc = MockMvcBuilders.standaloneSetup(apiController).build();
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post("/student/import"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String actualResult = result.getResponse().getContentAsString();
+        Assertions.assertEquals("OK", actualResult);
+    }
+
+    @Test
+    void importDataFromCSVTest_Failure() throws Exception {
+        when(studentServiceMock.readFromCSV(anyString())).thenReturn("IO Exception");
+
+        MockMvc mockMvc = MockMvcBuilders.standaloneSetup(apiController).build();
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post("/student/import"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String actualResult = result.getResponse().getContentAsString();
+        Assertions.assertEquals("IO Exception", actualResult);
+    }
+
+    @Test
+    void exportDataToCSVTest_Success() throws Exception{
+        when(studentServiceMock.writeToCSV(anyString())).thenReturn("OK");
+
+        MockMvc mockMvc = MockMvcBuilders.standaloneSetup(apiController).build();
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get("/student/export"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String actualResult = result.getResponse().getContentAsString();
+        Assertions.assertEquals("OK", actualResult);
+    }
+
+    @Test
+    void exportDataToCSV_Failure() throws Exception {
+        when(studentServiceMock.writeToCSV(anyString())).thenReturn("IO Exception");
+
+        MockMvc mockMvc = MockMvcBuilders.standaloneSetup(apiController).build();
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get("/student/export"))
+                .andExpect(status().isOk())
+                .andReturn();
+        String actualResult = result.getResponse().getContentAsString();
+        Assertions.assertEquals("IO Exception", actualResult);
     }
 }

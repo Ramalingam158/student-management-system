@@ -15,12 +15,9 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Reader;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -29,11 +26,11 @@ public class StudentService {
 
     public String saveOrUpdate(Student student) {
         studentRepo.save(student);
-        return "Success";
+        return "OK";
     }
 
-    public Student getSingleStudent(long id) {
-         return studentRepo.findById(id).get();
+    public Optional<Student> getSingleStudent(long id) {
+         return studentRepo.findById(id);
     }
 
     public List<Student> getAllStudent() {
@@ -67,28 +64,19 @@ public class StudentService {
             return "IO Exception";
         }
 
-        return "Success";
+        return "OK";
     }
 
     public String writeToCSV(String filePath) {
 
         List<Student> studentList = new ArrayList<>();
-        studentRepo.findAll().forEach(studentList::add);
+        studentList.addAll(studentRepo.findAll());
 
         try(CSVWriter csvWriter = new CSVWriter(new FileWriter(filePath + "\\export.csv"))) {
             csvWriter.writeNext(new String[] {"Id", "Name", "E-Mail ID"});
             studentList.forEach((student) -> csvWriter.writeNext(new String[] {String.valueOf(student.getStudentId()), student.getName(), student.getEmail()}));
 
-            Stream<Path> files = Files.list(Paths.get(filePath));
-            long count = files.count();
-            files.close();
-
-            if(count == 1) {
-                return "Success";
-            } else {
-                return "File Not Created";
-            }
-
+            return "OK";
         } catch (IOException e) {
             return "IO Exception";
         }

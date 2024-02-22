@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
@@ -16,14 +18,18 @@ public class ApiController {
     // To save a single student detail
     @PostMapping("/student")
     public String saveSingleStudent(@RequestBody Student student) {
-        studentService.saveOrUpdate(student);
-        return "OK";
+        return studentService.saveOrUpdate(student);
     }
 
     // To get a single student
     @GetMapping("/student/{id}")
     public Student getSingleStudent(@PathVariable("id") long id) {
-        return studentService.getSingleStudent(id);
+        Optional<Student> result = studentService.getSingleStudent(id);
+
+        if(result.isPresent())
+            return result.get();
+        else
+            throw new NoSuchElementException();
     }
 
     // To get all student
@@ -42,14 +48,12 @@ public class ApiController {
     // To import data from CSV to H2 DB
     @PostMapping("/student/import")
     public String importDataFromCSV() {
-        studentService.readFromCSV("D:\\Projects\\student-management-system\\data.csv");
-        return "OK";
+        return studentService.readFromCSV("D:\\Projects\\student-management-system\\data.csv");
     }
 
     // To export data to CSV from H2 DB
     @GetMapping("/student/export")
     public String exportDataToCSV() {
-        studentService.writeToCSV("D:\\Projects\\student-management-system\\student-management-system\\Export");
-        return "OK";
+        return studentService.writeToCSV("D:\\Projects\\student-management-system\\student-management-system\\Export");
     }
 }
