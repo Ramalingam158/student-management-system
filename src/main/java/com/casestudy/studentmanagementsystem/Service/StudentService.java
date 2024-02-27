@@ -40,18 +40,15 @@ public class StudentService {
     public String readFromCSV(String filePath) {
         try (Reader reader = new FileReader(filePath)) {
 
-            // Create CSV reader
             CSVReader csvReader = new CSVReaderBuilder(reader)
                     .withSkipLines(1)
                     .build();
 
-            // Create CSV to Bean object
             ColumnPositionMappingStrategy<Student> strategy = new ColumnPositionMappingStrategy<>();
             strategy.setType(Student.class);
             String[] columns = {"studentId", "name", "email"};
             strategy.setColumnMapping(columns);
 
-            // Parse CSV into beans
             CsvToBean<Student> csvToBean = new CsvToBeanBuilder<Student>(csvReader)
                     .withMappingStrategy(strategy)
                     .build();
@@ -61,7 +58,7 @@ public class StudentService {
             studentRepo.saveAll(studentList);
 
         } catch (IOException e) {
-            return "IO Exception";
+            return e.getMessage();
         }
 
         return "OK";
@@ -69,16 +66,14 @@ public class StudentService {
 
     public String writeToCSV(String filePath) {
 
-        List<Student> studentList = new ArrayList<>();
-        studentList.addAll(studentRepo.findAll());
+        List<Student> studentList = new ArrayList<>(studentRepo.findAll());
 
-        try(CSVWriter csvWriter = new CSVWriter(new FileWriter(filePath + "\\export.csv"))) {
+        try(CSVWriter csvWriter = new CSVWriter(new FileWriter(filePath))) {
             csvWriter.writeNext(new String[] {"Id", "Name", "E-Mail ID"});
             studentList.forEach((student) -> csvWriter.writeNext(new String[] {String.valueOf(student.getStudentId()), student.getName(), student.getEmail()}));
-
             return "OK";
         } catch (IOException e) {
-            return "IO Exception";
+            return e.getMessage();
         }
     }
 }

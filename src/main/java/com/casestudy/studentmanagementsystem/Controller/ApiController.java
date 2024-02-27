@@ -13,7 +13,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ApiController {
 
-    final StudentService studentService;
+    private final StudentService studentService;
 
     // To save a single student detail
     @PostMapping("/student")
@@ -48,12 +48,12 @@ public class ApiController {
     // To import data from CSV to H2 DB
     @PostMapping("/student/import")
     public String importDataFromCSV() {
-        return studentService.readFromCSV("D:\\Projects\\student-management-system\\data.csv");
+        return studentService.readFromCSV("CSV\\data.csv");
     }
 
     // To export data to CSV from H2 DB
     @GetMapping("/student/export")
     public String exportDataToCSV() {
-        return studentService.writeToCSV("D:\\Projects\\student-management-system\\student-management-system\\Export");
+        return studentService.writeToCSV("CSV\\export.csv");
     }
 }
