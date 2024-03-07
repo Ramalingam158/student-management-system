@@ -1,7 +1,9 @@
 package com.casestudy.studentmanagementsystem.Service;
 
+import com.casestudy.studentmanagementsystem.Dto.StudentDTO;
 import com.casestudy.studentmanagementsystem.Model.Student;
 import com.casestudy.studentmanagementsystem.Repository.StudentRepo;
+import com.casestudy.studentmanagementsystem.Producer.KafkaProducer;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 import com.opencsv.CSVWriter;
@@ -9,6 +11,7 @@ import com.opencsv.bean.ColumnPositionMappingStrategy;
 import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.CsvToBeanBuilder;
 import lombok.RequiredArgsConstructor;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.io.FileReader;
@@ -23,6 +26,10 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class StudentService {
     private final StudentRepo studentRepo;
+
+    private final KafkaProducer kafkaProducer;
+
+    private final KafkaTemplate<String, StudentDTO> kafkaTemplate;
 
     public String saveOrUpdate(Student student) {
         studentRepo.save(student);
@@ -75,5 +82,37 @@ public class StudentService {
         } catch (IOException e) {
             return e.getMessage();
         }
+    }
+
+    public String publishRecordToKafka(String filePath) {
+
+        try(FileReader reader = new FileReader(filePath)) {
+            CSVReader csvReader = new CSVReaderBuilder(reader)
+                    .withSkipLines(1)
+                    .build();
+
+            String[] record;
+            List<StudentDTO> studentList = new ArrayList<>();
+            while((record = csvReader.readNext()) != null) {
+                studentList.add(getStudentDto(record));
+            }
+
+            studentList.forEach(kafkaProducer::send);
+
+        } catch(Exception e) {
+            System.out.println(e.getMessage());
+        }
+
+        return "OK";
+    }
+
+    public StudentDTO getStudentDto(String[] data) {
+        StudentDTO student = new StudentDTO();
+
+        student.setStudentId(Long.parseLong(data[0]));
+        student.setName(data[1]);
+        student.setEmail(data[2]);
+
+        return student;
     }
 }

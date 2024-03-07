@@ -1,0 +1,19 @@
+{
+  "namespace": "com.casestudy.studentmanagementsystem.Dto",
+  "name": "StudentDTO",
+  "type": "record",
+  "fields": [
+    {
+      "name": "studentId",
+      "type": "long"
+    },
+    {
+      "name": "name",
+      "type": "string"
+    },
+    {
+      "name": "email",
+      "type": "string"
+    }
+  ]
+}
