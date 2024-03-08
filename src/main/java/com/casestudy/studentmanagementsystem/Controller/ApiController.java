@@ -61,4 +61,9 @@ public class ApiController {
     public String publishDataToKafka() {
         return studentService.publishRecordToKafka("CSV\\data.csv");
     }
+
+    @GetMapping("/student/kafka/consume")
+    public String consumeDataFromKafka() {
+        return studentService.consumeRecordsFromKafka("CSV\\kafka-export.csv");
+    }
 }

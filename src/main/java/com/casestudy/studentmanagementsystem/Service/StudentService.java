@@ -1,9 +1,10 @@
 package com.casestudy.studentmanagementsystem.Service;
 
+import com.casestudy.studentmanagementsystem.Consumer.KafkaConsumer;
 import com.casestudy.studentmanagementsystem.Dto.StudentDTO;
 import com.casestudy.studentmanagementsystem.Model.Student;
-import com.casestudy.studentmanagementsystem.Repository.StudentRepo;
 import com.casestudy.studentmanagementsystem.Producer.KafkaProducer;
+import com.casestudy.studentmanagementsystem.Repository.StudentRepo;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 import com.opencsv.CSVWriter;
@@ -11,7 +12,6 @@ import com.opencsv.bean.ColumnPositionMappingStrategy;
 import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.CsvToBeanBuilder;
 import lombok.RequiredArgsConstructor;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.io.FileReader;
@@ -29,7 +29,7 @@ public class StudentService {
 
     private final KafkaProducer kafkaProducer;
 
-    private final KafkaTemplate<String, StudentDTO> kafkaTemplate;
+    private final KafkaConsumer kafkaConsumer;
 
     public String saveOrUpdate(Student student) {
         studentRepo.save(student);
@@ -100,7 +100,20 @@ public class StudentService {
             studentList.forEach(kafkaProducer::send);
 
         } catch(Exception e) {
-            System.out.println(e.getMessage());
+            return e.getMessage();
+        }
+
+        return "OK";
+    }
+
+    public String consumeRecordsFromKafka(String filePath) {
+        List<StudentDTO> studentList = kafkaConsumer.getConsumedMsgs();
+
+        try(CSVWriter csvWriter = new CSVWriter(new FileWriter(filePath))) {
+            csvWriter.writeNext(new String[] {"Id", "Name", "E-Mail ID"});
+            studentList.forEach(student -> csvWriter.writeNext(getStudent(student)));
+        } catch(Exception e) {
+            return e.getMessage();
         }
 
         return "OK";
@@ -114,5 +127,13 @@ public class StudentService {
         student.setEmail(data[2]);
 
         return student;
+    }
+
+    public String[] getStudent(StudentDTO studentDTO) {
+        String id = String.valueOf(studentDTO.getStudentId());
+        String name = studentDTO.getName().toString();
+        String mail = studentDTO.getEmail().toString();
+
+        return new String[] {id, name, mail};
     }
 }
